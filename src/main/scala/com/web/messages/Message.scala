@@ -7,4 +7,4 @@ case object StartWebWorkers
 case object WebWorkersStarted
 case class JsonEvent(json:String)
 
-case object Stop
+case object StopActor

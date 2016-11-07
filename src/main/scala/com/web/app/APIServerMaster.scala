@@ -3,7 +3,7 @@ package com.web.app
 import akka.actor.{Props, Actor}
 import akka.event.Logging
 import akka.routing.{Router, ActorRefRoutee,SmallestMailboxRoutingLogic}
-import com.web.messages.JsonEvent
+import com.web.messages.{JsonEvent,StopActor}
 import akka.actor.Terminated
 /**
   * Created by govind.bhone on 11/3/2016.
@@ -32,15 +32,15 @@ class APIServerMaster extends Actor{
   override def receive ={
     case w : JsonEvent =>
       apiServerRouter.route(w, sender())
-    case s : Stop => apiServerRouter.route(s, sender())
+    case s @ StopActor => apiServerRouter.route(s, sender())
     case Terminated(a) =>
       log.warning(s"[Warning]-Routee ${a.path} is Terminated")
       apiServerRouter = apiServerRouter.removeRoutee(a)
-      val r = context.actorOf(Props[WebApplicationServerWorker])
+      val r = context.actorOf(Props[APIServerWorker])
       context watch r
       log.info(s"[Info]-Routee ${a.path} is Added to Routee List")
       apiServerRouter = apiServerRouter.addRoutee(r)
-    case _ => log.warning(s"[Warning]-Unknown Event to ${self.path.name}")
+    case _ => log.warning(s"[Warning]-Unknown Event to ${self.path}")
   }
 
 }

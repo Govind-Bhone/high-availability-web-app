@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{Props, ActorSystem}
 import com.web.app.WebAppMaster
-import com.web.messages.{Stop, StartWebWorkers, JsonEvent}
-import scala.concurrent.AwaitAPIServerMaster
+import com.web.messages.{StopActor, StartWebWorkers, JsonEvent}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.ask
 import akka.util.Timeout
@@ -48,12 +48,12 @@ object Main extends App {
                  "browser":"chrome"
                 }""".stripMargin )
 
-  actorSystem.scheduler.schedule( 5.seconds, 1.seconds ) {
+  actorSystem.scheduler.schedule( 5.seconds, 10.seconds ) {
     apiServer ! dataEvent
   }
 
   actorSystem.scheduler.schedule(5.seconds,60.seconds){
-    apiServer ! Stop
+    apiServer ! StopActor
   }
 
 }

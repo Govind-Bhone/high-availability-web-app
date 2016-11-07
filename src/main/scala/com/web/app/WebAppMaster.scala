@@ -2,9 +2,10 @@ package com.web.app
 
 import akka.actor._
 import akka.event.Logging
-import com.web.messages.{StartWebWorkers, WebWorkersStarted, JsonEvent}
+import com.web.messages.{StartWebWorkers, WebWorkersStarted, JsonEvent,StopActor}
 import akka.actor.OneForOneStrategy
 import akka.actor.SupervisorStrategy._
+import scala.concurrent.duration._
 
 class WebAppMaster extends Actor {
   val log = Logging.getLogger( context.system, this )
@@ -18,15 +19,15 @@ class WebAppMaster extends Actor {
       case _: ArithmeticException => Resume
       case _: NullPointerException => Restart
       case _: IllegalArgumentException => Stop
-      case _: Exception => Escalate
+      case _: Exception => Restart
     }
 
   override def preStart(): Unit = {
     log.info( "[Info]-WebApplicationMaster Started ........" )
   }
 
-  override def postStop(): Unit ={
-    log.warning("[Warning]-WebApplicationMaster Stopped........")
+  override def postStop(): Unit = {
+    log.warning( "[Warning]-WebApplicationMaster Stopped........" )
   }
 
   override def receive = {
@@ -42,8 +43,8 @@ class WebAppMaster extends Actor {
       loadBalancer = context.actorOf( Props( new LoadBalancer( webAppServerMaster ) ), "load-balancer" )
       context.watch( loadBalancer )
       sender ! WebWorkersStarted
-    case s@Stop => loadBalancer ! s
-    case _ => log.warning( s"[Warning]-Unknown Event for ${self.path.name}" )
+    case s @ `StopActor` => loadBalancer ! s
+    case e @ _ => log.warning( s"[Warning]-Unknown Event  ${e} for ${self.path}" )
   }
 
 }
