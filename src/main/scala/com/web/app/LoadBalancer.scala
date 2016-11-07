@@ -16,8 +16,13 @@ class LoadBalancer(webAppServerMaster: ActorRef) extends Actor {
     log.info( "[Info]-LoadBalancer Started........" )
   }
 
+  override def postStop(): Unit ={
+    log.warning("[Warning]-LoadBalancer Stopped........")
+  }
+
   override def receive = {
     case w : JsonEvent => webAppServerMaster ! w
+    case s @ Stop => webAppServerMaster ! s
     case _ => log.warning( s"[Warning]-Unknown Event to ${self.path.name}" )
   }
 

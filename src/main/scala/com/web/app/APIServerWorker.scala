@@ -15,8 +15,13 @@ class APIServerWorker extends Actor{
     log.info(s"[Info]-APIServerWorker Started ${self.path.name} ........")
   }
 
+  override def postStop(): Unit ={
+    log.warning("[Warning]-APIServerWorker Stopped........")
+  }
+
   override def receive ={
     case w : JsonEvent =>log.info(s"Processed Json is ${w.json}")
+    case s @ Stop => self ! PoisonPill
     case _ => log.warning(s"[Warning]-Unknown Event to ${self.path.name}")
   }
 

@@ -8,14 +8,12 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{Props, ActorSystem}
 import com.web.app.WebAppMaster
-import com.web.messages.{StartWebWorkers, JsonEvent}
-import scala.concurrent.Await
+import com.web.messages.{Stop, StartWebWorkers, JsonEvent}
+import scala.concurrent.AwaitAPIServerMaster
 import scala.concurrent.duration._
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.ExecutionContext.Implicits.global
-import akka.actor.PoisonPill
-
 
 object Main extends App {
   implicit val timeout = Timeout( 10, TimeUnit.SECONDS )
@@ -48,10 +46,14 @@ object Main extends App {
                  "region":"Islas Baleares",
                  "referrer":"www.google.com",
                  "browser":"chrome"
-                }""" )
+                }""".stripMargin )
 
   actorSystem.scheduler.schedule( 5.seconds, 1.seconds ) {
     apiServer ! dataEvent
+  }
+
+  actorSystem.scheduler.schedule(5.seconds,60.seconds){
+    apiServer ! Stop
   }
 
 }

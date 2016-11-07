@@ -25,15 +25,21 @@ class WebApplicationServerMaster(apiServerMaster:ActorRef) extends Actor{
   override def preStart(): Unit ={
     log.info("[Info]-WebApplicationServerMaster Started")
   }
+
+  override def postStop(): Unit ={
+    log.warning("[Warning]-WebApplicationServerMaster Stopped........")
+  }
+
   override def receive ={
     case w : JsonEvent =>
       webAppRouter.route(w, sender())
+    case s @ Stop => webAppRouter.route(s, sender())
     case Terminated(a) =>
-      log.warning(s"[Warning]-Routee ${a.path.name} is Terminated")
+      log.warning(s"[Warning]-Routee ${a.path} is Terminated")
       webAppRouter = webAppRouter.removeRoutee(a)
       val r = context.actorOf(Props[WebApplicationServerWorker])
       context watch r
-      log.info(s"[Info]-Routee ${a.path.name} is Added to Routee List")
+      log.info(s"[Info]-Routee ${a.path} is Added to Routee List")
       webAppRouter = webAppRouter.addRoutee(r)
     case _ => log.warning(s"[Warning]-Unknown Event to ${self.path.name}")
   }
